@@ -7,7 +7,6 @@
 #     $NavDvdPath
 #     $servicesUseSSL
 #     $certificateThumbprint
-#     $ExpectedWebBaseUrl
 #
 # OUTPUT
 #    $publicWebBaseUrl
