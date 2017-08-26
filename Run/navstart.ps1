@@ -267,9 +267,7 @@ if ($runningGenericImage -or $runningSpecificImage) {
         Write-Host "Stopping local SQL Server"
         Stop-Service -Name $SqlServiceName -ErrorAction Ignore
     }
-}
 
-if ($runningGenericImage -or $runningSpecificImage) {
     # Certificate
     if ($navUseSSL -or $servicesUseSSL) {
         . (Get-MyFilePath "SetupCertificate.ps1")
