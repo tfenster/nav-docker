@@ -206,4 +206,4 @@ $customNavSettings = "$env:customNavSettings"
 $customWebSettings = "$env:customWebSettings"
 $customWinSettings = "$env:customWinSettings"
 
-$enableWarningsInLog = "$env:enableWarningsInLog"
+$enableWarningsInLog = ($env:enableWarningsInLog -eq "Y")
