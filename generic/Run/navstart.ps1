@@ -139,7 +139,8 @@ if (Test-Path "$serviceTierFolder\Microsoft.Dynamics.Nav.Management.psm1") {
 
 $usingLocalSQLServer = ($databaseServer -eq "localhost")
 if (!$usingLocalSQLServer) {
-    if ((Get-service -name $SqlServiceName).Status -eq 'Running') {
+    $service = Get-Service -Name MSSQLSERVER -ErrorAction SilentlyContinue
+    if ($null -ne $service -and $service.Status -eq 'Running') {
         Write-Host "Stopping local SQL Server"
         Stop-Service -Name $SqlServiceName -ErrorAction Ignore
         Stop-Service -Name $SqlWriterServiceName -ErrorAction Ignore
@@ -179,8 +180,10 @@ if (!$restartingInstance -and $bakfile -ne "" -and !$multitenant) {
     Sync-NavTenant -ServerInstance $serverInstance -Force
 }
 
-$wwwRootPath = Get-WWWRootPath
-$httpPath = Join-Path $wwwRootPath "http"
+if ($webClient -ne "N") {
+    $wwwRootPath = Get-WWWRootPath
+    $httpPath = Join-Path $wwwRootPath "http"
+}
 
 if ($newPublicDnsName -and $webClient -ne "N") {
     try {
