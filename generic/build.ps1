@@ -35,7 +35,8 @@ else {
         $dockerfile = Join-Path $RootPath "DOCKERFILE"
     }
 
-    $image = "mygeneric"
+    $genericTag = "1.1.0.0"
+    $image = "mygeneric:$genericTag"
  
     docker pull $baseimage
     $osversion = docker inspect --format "{{.OsVersion}}" $baseImage
@@ -58,6 +59,7 @@ else {
                  --build-arg created=$created `
                  --build-arg tag="$genericTag" `
                  --build-arg osversion="$osversion" `
+                 --build-arg bcOnly="$bcOnly" `
                  --isolation=$isolation `
                  --tag $image `
                  --file $dockerfile `
