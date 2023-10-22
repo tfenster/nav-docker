@@ -61,6 +61,9 @@ You must map a folder on the host with the DVD content to $navDvdPath"
 }
 
 $skipDb = $filesOnly
+if ($false -eq $skipDb) {
+    $skipDb = (-not (Test-Path 'HKLM:\software\microsoft\microsoft sql server\mssql15.SQLEXPRESS'))
+}
 
 
 if (!$skipDb) {
