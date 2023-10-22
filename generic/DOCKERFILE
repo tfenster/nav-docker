@@ -5,13 +5,16 @@ FROM $baseimage
 ARG created
 ARG tag
 ARG osversion
+ARG bcOnly
+ENV bcOnly=$bcOnly
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
 # Install the prerequisites first to be able reuse the cache when changing only the scripts.
 # Temporary workaround for Windows DNS client weirdness (need to check if the issue is still present or not).
 
-RUN Add-WindowsFeature Web-Server,web-AppInit,web-Asp-Net45,web-Windows-Auth,web-Dyn-Compression,web-WebSockets; \
+RUN if ('true' -ne $env:bcOnly) { \
+    Add-WindowsFeature Web-Server,web-AppInit,web-Asp-Net45,web-Windows-Auth,web-Dyn-Compression,web-WebSockets; \
     Stop-Service 'W3SVC' ; \
     Set-Service 'W3SVC' -startuptype manual ; \
     Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Dnscache\Parameters' -Name ServerPriorityTimeLimit -Value 0 -Type DWord; \
@@ -28,7 +31,8 @@ RUN Add-WindowsFeature Web-Server,web-AppInit,web-Asp-Net45,web-Windows-Auth,web
     Set-Service 'SQLTELEMETRY$SQLEXPRESS' -startuptype manual ; \
     Set-Service 'SQLWriter' -startuptype manual ; \
     Set-Service 'SQLBrowser' -startuptype manual ; \
-    Remove-Item -Recurse -Force sqlexpress.exe, setup
+    Remove-Item -Recurse -Force sqlexpress.exe, setup \
+    }
 
 COPY Run /Run/
 
@@ -37,9 +41,11 @@ RUN Invoke-WebRequest -Uri 'https://bcdocker.blob.core.windows.net/public/nav-do
     [System.IO.Compression.ZipFile]::ExtractToDirectory('.\nav-docker-install.zip', 'c:\run') ; \
     Remove-Item -Force 'nav-docker-install.zip' ; \
     . C:\Run\UpdatePowerShellExeConfig.ps1 ; \
-    Start-Service -Name `$SqlBrowserServiceName -ErrorAction Ignore -WarningAction Ignore ; \
-    Start-Service -Name `$SqlWriterServiceName -ErrorAction Ignore -WarningAction Ignore ; \
-    Start-Service -Name `$SqlServiceName -ErrorAction Ignore -WarningAction Ignore ; \
+    if ('true' -ne $env:bcOnly) { \
+        Start-Service -Name `$SqlBrowserServiceName -ErrorAction Ignore -WarningAction Ignore ; \
+        Start-Service -Name `$SqlWriterServiceName -ErrorAction Ignore -WarningAction Ignore ; \
+        Start-Service -Name `$SqlServiceName -ErrorAction Ignore -WarningAction Ignore ; \
+    } \
     Invoke-WebRequest -Uri 'https://bcartifacts.blob.core.windows.net/prerequisites/rewrite_2.0_rtw_x64.msi' -OutFile rewrite_amd64.msi ; \
     start-process -Wait -FilePath .\rewrite_amd64.msi -ArgumentList /quiet, /qn, /passive ; \
     Invoke-WebRequest -Uri 'https://bcartifacts.blob.core.windows.net/prerequisites/OpenXMLSDKv25.msi' -OutFile OpenXMLSDKV25.msi ; \
@@ -68,4 +74,5 @@ LABEL maintainer="Dynamics SMB" \
       eula="https://go.microsoft.com/fwlink/?linkid=861843" \
       tag="$tag" \
       created="$created" \
-      osversion="$osversion"
+      osversion="$osversion" \
+      bcOnly="$bcOnly"
