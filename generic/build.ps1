@@ -58,17 +58,18 @@ docker images --format "{{.Repository}}:{{.Tag}}" | % {
     }
 }
 
-docker build --build-arg baseimage=$baseimage `
-             --build-arg created=$created `
-             --build-arg tag="$genericTag" `
-             --build-arg osversion="$osversion" `
-             --build-arg filesonly="$filesonly" `
-             --build-arg only24="$only24" `
-             --isolation=$isolation `
-             --memory 32G `
-             --tag $image `
-             --file $dockerfile `
-             $RootPath
+docker buildx build --build-arg baseimage=$baseimage `
+                    --build-arg created=$created `
+                    --build-arg tag="$genericTag" `
+                    --build-arg osversion="$osversion" `
+                    --build-arg filesonly="$filesonly" `
+                    --build-arg only24="$only24" `
+                    --isolation=$isolation `
+                    --memory 32G `
+                    --tag $image `
+                    --file $dockerfile `
+                    --load `
+                    $RootPath
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Failed with exit code $LastExitCode"
